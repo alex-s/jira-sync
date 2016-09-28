@@ -1,11 +1,13 @@
 <?php
 
-require_once 'vendor/autoload.php';
+require_once 'load.php';
 
 use chobie\Jira\Api;
-use chobie\Jira\Api\Authentication\Basic;
 use chobie\Jira\Issues\Walker;
 use chobie\Jira\Issue;
+use \Sync\JiraApi\CookieAuth;
+use \Sync\JiraApi\AdvancedCurlClient;
+use \Sync\JiraApi\AdvancedApi;
 
 $milestones = [];
 $issues = [];
@@ -13,19 +15,24 @@ $issues = [];
 const DEFAULT_MILESTONE_NAME = 'Empty Milestone';
 const DEFAULT_MILESTONE_ID = 1;
 
-$api = new Api(
-    'https://tasks.trivago.com',
-    new Basic('trivago', 'trvem#tsurt')
+$params = parse_ini_file('params.ini');
+//@TODO validate params
+
+//var_dump($params);
+
+$api = new AdvancedApi($params['jira_url'],
+    new CookieAuth($params['jira_login'], $params['jira_password'], $params['htaccess_user'], $params['htaccess_pass']),
+    new AdvancedCurlClient()
 );
 
 $walker = new Walker($api);
 $walker->push(
-    'project = "XSEM"'
+    "project = {$params['jira_project_key']}"
 );
 $i = 0;
 foreach ( $walker as $issue ) {
     $i++;
-//    var_dump($issue);
+    var_dump($issue);
     /** @var Issue $issue */
     $sprint = $issue->get('Sprint');
 
@@ -47,10 +54,11 @@ foreach ( $walker as $issue ) {
         'milestone_id' => $id
     ];
     print($i.PHP_EOL);
-//    die;
+    die;
 //    die;
     // Send custom notification here.
 }
 
-var_dump($issues);
-var_dump($milestones);
+var_dump("Empty Result");
+//var_dump($issues);
+//var_dump($milestones);
