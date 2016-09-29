@@ -43,27 +43,58 @@ $walker->push(
 );
 $i = 0;
 
-foreach ( $walker as $issue ) {
-    $i++;
+//foreach ( $walker as $issue ) {
+//    $i++;
+//
+//    /** @var AdvancedIssue $issue */
+//    $sprints[$issue->getSprintId()] = [
+//        'jira_id' => $issue->getSprintId(),
+//        'name' => $issue->getSprintName(),
+//        'status' => $issue->getSprintStatus()
+//    ];
+//
+//    $issues[$issue->getId()] = [
+//        'jira_id' => $issue->getId(),
+//        'name' => $issue->getKey() . ' ' . $issue->getSummary(),
+//        'sprint_id' => $issue->getSprintId(),
+//        'is_open' => !($issue->getStatus()["name"] == 'Resolved' || $issue->getStatus()["name"] == 'Closed')
+//    ];
+//}
 
-    /** @var AdvancedIssue $issue */
-    $sprints[$issue->getSprintId()] = [
-        'jira_id' => $issue->getSprintId(),
-        'name' => $issue->getSprintName(),
-        'status' => $issue->getSprintStatus()
-    ];
+print($i . ' Issues was exported from Jira'.PHP_EOL);
 
-    $issues[$issue->getId()] = [
-        'jira_id' => $issue->getId(),
-        'name' => $issue->getKey() . ' ' . $issue->getSummary(),
-        'sprint_id' => $issue->getSprintId(),
-        'is_open' => !($issue->getStatus()["name"] == 'Resolved' || $issue->getStatus()["name"] == 'Closed')
-    ];
-}
+$sprints[1] = [
+    'jira_id' => 1,
+    'name' => 2,
+    'status' => 3
+];
 
-print($i . ' Issues was exported from Jira');
+$sprints[2] = [
+    'jira_id' => 2,
+    'name' => 3,
+    'status' => 4
+];
 
-//$count = $db->insertSprints($sprints);
+$sprints[3] = [
+    'jira_id' => 3,
+    'name' => 4,
+    'status' => 5
+];
+
+$sprints[4] = [
+    'jira_id' => 4,
+    'name' => 5,
+    'status' => 6
+];
+
+$sprints[5] = [
+    'jira_id' => 5,
+    'name' => 6,
+    'status' => 9
+];
+
+$db->insertArray('sprint', $sprints);
+$db->insertArray('sprint', $issues);
 //$count = $db->insertIssues($sprints);
 
 //var_dump("Empty Result");

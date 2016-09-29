@@ -63,4 +63,46 @@ class DB
             }
         }
     }
+
+    public function insertArray($table, array $rows)
+    {
+        if (empty($rows)) {
+            throw new Exception('No data provided');
+        }
+
+        $keys = array_keys($rows[array_keys($rows)[0]]);
+        $insertHeaders = implode('`,`', $keys);
+        $duplicates = [];
+
+        foreach ($keys as $key) {
+            if ($key == 'jira_id') {
+                continue;
+            }
+            $duplicates[] = sprintf("`%s` = VALUES(%s)", $key, $key);
+        }
+
+        $duplicates = implode(',', $duplicates);
+
+
+        $sqlTemplate = <<<SQL
+            INSERT INTO sprint (`{$insertHeaders}`)
+            VALUES :values
+            ON DUPLICATE KEY UPDATE {$duplicates}
+
+SQL;
+        $values = [];
+
+        $i = 0;
+        foreach ($rows as $row) {
+            $i++;
+            $values[] = vsprintf("(" . implode(",", array_fill(0, count($keys), "'%s'")) . ")", $row);
+
+            if (($i != 0 && $i % 2 == 0) || $i == count($rows)) {
+                $sql = str_replace(':values', implode(',', $values), $sqlTemplate);
+
+                $this->exec($sql);
+                $values = [];
+            }
+        }
+    }
 }
