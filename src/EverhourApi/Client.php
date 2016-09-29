@@ -3,6 +3,8 @@ namespace Sync\EverhourApi;
 
 class Client
 {
+    //https://api.everhour.com/internal-projects/ev:167438714416270/sections
+    //https://api.everhour.com/auth/password/authorize
     private $login;
     private $password;
 

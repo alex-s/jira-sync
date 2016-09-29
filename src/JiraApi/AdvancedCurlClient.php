@@ -2,9 +2,10 @@
 namespace Sync\JiraApi;
 
 use chobie\Jira\Api\Authentication\AuthenticationInterface;
-use \chobie\Jira\Api\Client\CurlClient;
+use chobie\Jira\Api\Client\CurlClient;
 use chobie\Jira\Api\Exception;
 use chobie\Jira\Api\UnauthorizedException;
+use Sync\EverhourApi\ApiKeyAuth;
 
 class AdvancedCurlClient extends CurlClient
 {
@@ -25,17 +26,29 @@ class AdvancedCurlClient extends CurlClient
 
             $url .= '?' . http_build_query($data);
         }
-        /** @var CookieAuth $credential */
-
         curl_setopt($curl, CURLOPT_URL, $endpoint . $url);
         curl_setopt($curl, CURLOPT_HEADER, 0);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($curl, CURLOPT_USERPWD, sprintf('%s:%s', $credential->getId(), $credential->getPassword()));
+        $headers = ['Content-Type: application/json;charset=UTF-8'];
+
+        if ($credential instanceof HtAccessCookieAuth) {
+            curl_setopt($curl, CURLOPT_USERPWD, sprintf('%s:%s', $credential->getId(), $credential->getPassword()));
+            $headers[] = 'cookie: JSESSIONID=' . $credential->getCookie();
+        }
+
+        if ($credential instanceof ApiKeyAuth) {
+            $headers[] = 'x-api-key:' . $credential->getApiKey();
+
+            if (!$credential->isAuth()) {
+                curl_setopt($curl, CURLOPT_HEADER, 1);
+            }
+        }
+
         curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($curl, CURLOPT_VERBOSE, $debug);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json;charset=UTF-8', 'cookie: JSESSIONID=' . $credential->getCookie()));
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
 
         if ( $method == 'POST' ) {
             curl_setopt($curl, CURLOPT_POST, 1);
@@ -79,6 +92,10 @@ class AdvancedCurlClient extends CurlClient
             throw new Exception('JIRA Rest server returns unexpected result.');
         }
         // @codeCoverageIgnoreEnd
+
+        if ($credential instanceof ApiKeyAuth && !$credential->isAuth()) {
+            return $credential->parseResponse($response);
+        }
 
         return $response;
     }

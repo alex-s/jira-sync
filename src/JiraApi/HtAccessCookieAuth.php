@@ -3,7 +3,7 @@ namespace Sync\JiraApi;
 
 use \chobie\Jira\Api\Authentication\Basic;
 
-class CookieAuth extends Basic
+class HtAccessCookieAuth extends Basic
 {
     private $userName;
     private $userPass;

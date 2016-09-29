@@ -7,7 +7,7 @@ class AdvancedApi extends Api
 {
     public function api($method = self::REQUEST_GET, $url, $data = array(), $return_as_array = false, $is_file = false, $debug = false)
     {
-        /** @var CookieAuth $auth */
+        /** @var HtAccessCookieAuth $auth */
         $auth = $this->authentication;
 
         if (!$auth->isAuth()) {
@@ -20,7 +20,12 @@ class AdvancedApi extends Api
             }
         }
 
-        return parent::api($method,$url,$data,$return_as_array,$is_file,$debug);
-    }
+        $result = parent::api($method,$url,$data,$return_as_array,$is_file,$debug);
 
+        if ($return_as_array) {
+            return $result;
+        }
+
+        return new AdvancedResult($result->getResult());
+    }
 }
