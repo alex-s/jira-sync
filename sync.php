@@ -2,13 +2,13 @@
 
 require_once 'load.php';
 
-use chobie\Jira\Api;
 use chobie\Jira\Issues\Walker;
 use \Sync\JiraApi\AdvancedCurlClient;
 use \Sync\JiraApi\AdvancedApi;
-use \Sync\JiraApi\AdvancedIssue;
 use \Sync\Database\DB;
 use \Sync\JiraApi\HtAccessCookieAuth;
+use \Sync\EverhourApi\Api;
+use \Sync\EverhourApi\ApiKeyAuth;
 
 $params = parse_ini_file('params.ini');
 //@TODO validate params
@@ -18,26 +18,17 @@ $issues = [];
 $db = new DB($params['db_host'], $params['db_user'], $params['db_pass'], $params['db_database']);
 $db->execFile(file_get_contents('db.sql'));
 
-$api = new AdvancedApi($params['jira_url'],
+$jiraApi = new AdvancedApi($params['jira_url'],
     new HtAccessCookieAuth($params['jira_login'], $params['jira_password'], $params['htaccess_user'], $params['htaccess_pass']),
     new AdvancedCurlClient()
 );
 
-//$api = new \Sync\EverhourApi\Api($params['eh_url'],
-//    new \Sync\EverhourApi\ApiKeyAuth($params['eh_login'], $params['eh_password']),
-//    new AdvancedCurlClient()
-//);
+$everhourApi = new Api($params['eh_url'], $params['eh_project_key'],
+    new ApiKeyAuth($params['eh_api_key']),
+    new AdvancedCurlClient()
+);
 
-//$result = $api->api('GET', '/internal-projects/ev:167438714416270/sections');
-//var_dump($result->getResult());
-
-
-
-
-//var_dump($db->fetch("SELECT 1"));
-//die;
-
-$walker = new Walker($api);
+$walker = new Walker($jiraApi);
 $walker->push(
     "project = {$params['jira_project_key']}"
 );
@@ -45,7 +36,9 @@ $i = 0;
 
 //foreach ( $walker as $issue ) {
 //    $i++;
-//
+//    if($i%100 == 0) {
+//        print($i . ' Issues was exported from Jira...'.PHP_EOL);
+//    }
 //    /** @var AdvancedIssue $issue */
 //    $sprints[$issue->getSprintId()] = [
 //        'jira_id' => $issue->getSprintId(),
@@ -56,46 +49,45 @@ $i = 0;
 //    $issues[$issue->getId()] = [
 //        'jira_id' => $issue->getId(),
 //        'name' => $issue->getKey() . ' ' . $issue->getSummary(),
-//        'sprint_id' => $issue->getSprintId(),
-//        'is_open' => !($issue->getStatus()["name"] == 'Resolved' || $issue->getStatus()["name"] == 'Closed')
+//        'sprint_jira_id' => $issue->getSprintId(),
+//        'is_closed' => $issue->getStatus()["name"] == 'Resolved' || $issue->getStatus()["name"] == 'Closed'
 //    ];
 //}
 
-print($i . ' Issues was exported from Jira'.PHP_EOL);
+print($i . ' Issues was exported from Jira.'.PHP_EOL);
+print('Import finish'.PHP_EOL);
 
-$sprints[1] = [
-    'jira_id' => 1,
-    'name' => 2,
-    'status' => 3
-];
+//$db->insertArray('sprint', $sprints);
+//$db->insertArray('issue', $issues);
+//$db->rebuildSprintOrder();
 
-$sprints[2] = [
-    'jira_id' => 2,
-    'name' => 3,
-    'status' => 4
-];
+$sections = $everhourApi->getSections();
 
-$sprints[3] = [
-    'jira_id' => 3,
-    'name' => 4,
-    'status' => 5
-];
+$sectionBuffer = [];
+$issueBuffer = [];
+foreach ($sections as $section) {
+    $sectionBuffer[] = [
+        'everhour_id' => $section['id'],
+        'name' => $section['name'],
+    ];
 
-$sprints[4] = [
-    'jira_id' => 4,
-    'name' => 5,
-    'status' => 6
-];
+    foreach ($section['tasks'] as $issue) {
+        $issueBuffer[] = [
+            'everhour_id' => $issue['id'],
+            'name' => $issue['name'],
+        ];
+    }
+}
 
-$sprints[5] = [
-    'jira_id' => 5,
-    'name' => 6,
-    'status' => 9
-];
+$db->insertArray('sprint_buffer', $sectionBuffer);
+$db->insertArray('issue_buffer', $issueBuffer);
 
-$db->insertArray('sprint', $sprints);
-$db->insertArray('sprint', $issues);
-//$count = $db->insertIssues($sprints);
+$db->mergeBuffer('sprint');
+$db->mergeBuffer('issue');
+
+//$newSections = $db->getNewSprints();
+//$everhourApi->newSections($newSections);
+//$newissues = $db->getInserts('sprint');
 
 //var_dump("Empty Result");
 //var_dump($issues);

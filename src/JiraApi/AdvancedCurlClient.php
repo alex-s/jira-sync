@@ -38,10 +38,6 @@ class AdvancedCurlClient extends CurlClient
 
         if ($credential instanceof ApiKeyAuth) {
             $headers[] = 'x-api-key:' . $credential->getApiKey();
-
-            if (!$credential->isAuth()) {
-                curl_setopt($curl, CURLOPT_HEADER, 1);
-            }
         }
 
         curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
@@ -92,10 +88,6 @@ class AdvancedCurlClient extends CurlClient
             throw new Exception('JIRA Rest server returns unexpected result.');
         }
         // @codeCoverageIgnoreEnd
-
-        if ($credential instanceof ApiKeyAuth && !$credential->isAuth()) {
-            return $credential->parseResponse($response);
-        }
 
         return $response;
     }

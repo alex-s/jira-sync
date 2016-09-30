@@ -6,8 +6,8 @@ use chobie\Jira\Issue;
 
 class AdvancedIssue extends Issue
 {
-    const DEFAULT_SPRINT_NAME = 'Unassigned';
-    const DEFAULT_SPRINT_ID = 1;
+    const DEFAULT_SPRINT_NAME = 'Without Sprint';
+    const DEFAULT_SPRINT_ID = 2;
     const DEFAULT_SPRINT_STATUS = 'BACKLOG';
 
 
@@ -16,8 +16,9 @@ class AdvancedIssue extends Issue
         switch($status) {
             case 'ACTIVE' : return 1;
             case 'FUTURE' : return 2;
-            case 'BACKLOG' : return 3;
-            case 'CLOSED' : return 4;
+            //3 status is for  management sprint
+            case 'BACKLOG' : return 4;
+            case 'CLOSED' : return 5;
             default: throw new Exception('Unsupported sprint status ' . $status);
         }
     }

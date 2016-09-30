@@ -85,24 +85,49 @@ class DB
 
 
         $sqlTemplate = <<<SQL
-            INSERT INTO sprint (`{$insertHeaders}`)
+            INSERT INTO {$table} (`{$insertHeaders}`)
             VALUES :values
             ON DUPLICATE KEY UPDATE {$duplicates}
 
 SQL;
         $values = [];
-
         $i = 0;
         foreach ($rows as $row) {
             $i++;
+
+            $row = array_map([$this->getConnection(), 'escape_string'], $row);
             $values[] = vsprintf("(" . implode(",", array_fill(0, count($keys), "'%s'")) . ")", $row);
 
-            if (($i != 0 && $i % 2 == 0) || $i == count($rows)) {
+            if (($i % 50 == 0) || $i == count($rows)) {
                 $sql = str_replace(':values', implode(',', $values), $sqlTemplate);
 
                 $this->exec($sql);
                 $values = [];
             }
         }
+    }
+
+    public function rebuildSprintOrder()
+    {
+        $sql = <<<SQL
+            UPDATE `sprint`
+            LEFT JOIN (
+                SELECT jira_id, @a := @a+1 as num FROM `sprint`
+                ORDER BY status
+            ) positions ON positions.jira_id = sprint.jira_id
+            SET position = positions.num
+SQL;
+        $this->exec('SET @a = 0;');
+        $this->exec($sql);
+    }
+
+    public function mergeBuffer($table)
+    {
+        $sql = <<<SQL
+            UPDATE {$table} as origin
+            LEFT JOIN {$table}_buffer as buffer on origin.name = buffer.name
+            SET origin.everhour_id = buffer.everhour_id
+SQL;
+        $this->exec($sql);
     }
 }
