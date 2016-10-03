@@ -39,7 +39,8 @@ print('Sync issues with everhour'.PHP_EOL);
 $everhourSync->download();
 
 print('Upload issues to everhour'.PHP_EOL);
-$everhourSync->upload();
+$requests = $everhourSync->upload();
 
 print("Done".PHP_EOL);
+print("Requests made: {$requests}".PHP_EOL);
 print(sprintf("memory: %s kb, time: %f min" . PHP_EOL, memory_get_usage() /100, (time()-$startTime)/60));

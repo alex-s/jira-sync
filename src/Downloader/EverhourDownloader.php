@@ -45,11 +45,12 @@ class EverhourDownloader extends Downloader
         /** @var Api $api */
         $api = $this->api;
         $newSections = $this->db->getSprintData(false);
-
+        $requests = 0;
 
         $count = count($newSections);
         $i = 1;
         foreach ($newSections as $section) {
+            $requests++;
             print(sprintf('create %d section from %d' . PHP_EOL, $i, $count));
             $data = ['name' => $section['name']];
             $api->createSection($data);
@@ -64,6 +65,7 @@ class EverhourDownloader extends Downloader
         $count = count($allSections);
         $i = 1;
         foreach ($allSections as $section) {
+            $requests++;
             print(sprintf('update %d section from %d' . PHP_EOL, $i, $count));
             $data = ['position' => $section['position'], 'status' => $section['status'] > 3 ? 'archived' : 'open'];
             $api->updateSection($section['everhour_id'], $data);
@@ -79,16 +81,23 @@ class EverhourDownloader extends Downloader
 
             $data = ['name' => $issue['name'], 'status' => $issue['is_closed'] ? 'closed' : 'open', 'section' => ['id' => $issue['sprint_everhour_id']]];
 
-            if (empty($issue['everhour_id'])) {
+            if (empty($issue['everhour_id']) && !$issue['is_closed']) {
+                $requests++;
                 $api->createIssue($data);
-            } else {
-                $api->updateIssue($issue['issue_everhour_id'], $data);
             }
+
+            if (!empty($issue['everhour_id']) && $issue['is_closed']) {
+                $requests++;
+                $api->createIssue($data);
+            }
+
             sleep(0.1);
             $i++;
         }
 
         print("everhour sync 2".  PHP_EOL);
         $this->download();
+
+        return $requests;
     }
 }
