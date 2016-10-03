@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS `issue_buffer` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 INSERT IGNORE INTO `sprint` (`jira_id`, `name`, `status`)
-VALUES (1, 'Management', 3), (2, 'Without Sprint', 3);
+VALUES (1, 'Management', 3), (2, 'Without Sprint', 4);
 
 INSERT IGNORE INTO `issue` (`jira_id`, `name`, `sprint_jira_id`)
-VALUES (1, 'Code review', 2), (2, 'Meeting', 2), (3, 'Management', 2), (4, 'Issues Discuss', 2);
+VALUES (1, 'Code review', 1), (2, 'Meeting', 1), (3, 'Management', 1), (4, 'Issues Discuss', 1);

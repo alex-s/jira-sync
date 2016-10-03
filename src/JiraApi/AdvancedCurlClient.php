@@ -83,6 +83,11 @@ class AdvancedCurlClient extends CurlClient
             throw new Exception('JIRA Rest server returns unexpected result.');
         }
 
+        if ($http_code == 404 || $http_code == 500) {
+            var_dump($data);
+            throw new Exception(sprintf('Error request to "%s"', $endpoint.$url));
+        }
+
         // @codeCoverageIgnoreStart
         if ( is_null($response) ) {
             throw new Exception('JIRA Rest server returns unexpected result.');

@@ -41,7 +41,7 @@ class DB
 
     public function fetch($sql)
     {
-        return $this->exec($sql)->fetch_assoc();
+        return $this->exec($sql)->fetch_all(MYSQLI_ASSOC);
     }
 
     public function exec($sql)
@@ -67,7 +67,7 @@ class DB
     public function insertArray($table, array $rows)
     {
         if (empty($rows)) {
-            throw new Exception('No data provided');
+            return;
         }
 
         $keys = array_keys($rows[array_keys($rows)[0]]);
@@ -129,5 +129,33 @@ SQL;
             SET origin.everhour_id = buffer.everhour_id
 SQL;
         $this->exec($sql);
+    }
+
+    public function getSprintData($isAll = true)
+    {
+        $where = 1;
+
+        if (!$isAll) {
+            $where = 'everhour_id IS NULL';
+        }
+        $sql = <<<SQL
+            SELECT * FROM `sprint`
+            WHERE {$where}
+SQL;
+        return $this->fetch($sql);
+    }
+
+    public function getIssueData()
+    {
+        $sql = <<<SQL
+            SELECT issue.*, sprint.everhour_id as sprint_everhour_id, issue.everhour_id as issue_everhour_id  FROM `issue`
+            LEFT JOIN `sprint` ON issue.sprint_jira_id = sprint.jira_id
+SQL;
+        return $this->fetch($sql);
+    }
+
+    public function clearTable($table)
+    {
+        $this->exec("DELETE FROM {$table}");
     }
 }
