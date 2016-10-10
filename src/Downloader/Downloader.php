@@ -22,5 +22,5 @@ abstract class Downloader
         $this->api = $api;
     }
 
-    public abstract function download();
+    public abstract function download($isKanban = false);
 }

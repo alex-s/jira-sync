@@ -5,7 +5,7 @@ use Sync\EverhourApi\Api;
 
 class EverhourDownloader extends Downloader
 {
-    public function download()
+    public function download($isKanban = false)
     {
         /** @var Api $api */
         $api = $this->api;
@@ -40,7 +40,7 @@ class EverhourDownloader extends Downloader
         $this->db->mergeBuffer('issue');
     }
 
-    public function upload()
+    public function upload($isKanban)
     {
         /** @var Api $api */
         $api = $this->api;
@@ -67,7 +67,7 @@ class EverhourDownloader extends Downloader
         foreach ($allSections as $section) {
             $requests++;
             print(sprintf('update %d section from %d' . PHP_EOL, $i, $count));
-            $data = ['position' => $section['position'], 'status' => $section['status'] > 3 ? 'archived' : 'open'];
+            $data = ['position' => $section['position'], 'status' => !$isKanban ? ($section['status'] > 3 ? 'archived' : 'open') : 'open'];
             $api->updateSection($section['everhour_id'], $data);
             sleep(0.1);
             $i++;
@@ -88,7 +88,7 @@ class EverhourDownloader extends Downloader
 
             if (!empty($issue['everhour_id']) && $issue['is_closed']) {
                 $requests++;
-                $api->createIssue($data);
+                $api->updateIssue($issue['everhour_id'], $data);
             }
 
             sleep(0.1);

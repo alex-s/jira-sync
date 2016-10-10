@@ -15,7 +15,7 @@ class JiraDownloader extends Downloader
         parent::__construct($db, $api);
     }
 
-    public function download()
+    public function download($isKanban = false)
     {
         $i = 0;
         $sprints = [];
@@ -42,15 +42,18 @@ class JiraDownloader extends Downloader
             $issues[$issue->getId()] = [
                 'jira_id' => $issue->getId(),
                 'name' => $issue->getKey() . ' ' . $issue->getSummary(),
-                'sprint_jira_id' => $issue->getSprintId(),
-                'is_closed' => $issue->getStatus()["name"] == 'Resolved' || $issue->getStatus()["name"] == 'Closed'
+                'sprint_jira_id' => !$isKanban ? $issue->getSprintId() : AdvancedIssue::DEFAULT_SPRINT_ID,
+                'is_closed' => (int)($issue->getStatus()["name"] == 'Resolved' || $issue->getStatus()["name"] == 'Closed')
             ];
         }
 
         print($i . ' Issues was exported from Jira.'.PHP_EOL);
         print('Import finish'.PHP_EOL);
 
-        $this->db->insertArray('sprint', $sprints);
+        if (!$isKanban) {
+            $this->db->insertArray('sprint', $sprints);
+        }
+
         $this->db->insertArray('issue', $issues);
         $this->db->rebuildSprintOrder();
     }
