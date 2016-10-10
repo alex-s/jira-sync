@@ -67,7 +67,7 @@ class EverhourDownloader extends Downloader
         foreach ($allSections as $section) {
             $requests++;
             print(sprintf('update %d section from %d' . PHP_EOL, $i, $count));
-            $data = ['position' => $section['position'], 'status' => !$isKanban ? ($section['status'] > 3 ? 'archived' : 'open') : 'open'];
+            $data = ['name' => $section['name'], 'position' => $section['position'], 'status' => !$isKanban ? ($section['status'] > 3 ? 'archived' : 'open') : 'open'];
             $api->updateSection($section['everhour_id'], $data);
             sleep(0.1);
             $i++;

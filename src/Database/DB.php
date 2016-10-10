@@ -127,6 +127,7 @@ SQL;
             UPDATE {$table} as origin
             LEFT JOIN {$table}_buffer as buffer on origin.name = buffer.name
             SET origin.everhour_id = buffer.everhour_id
+            WHERE buffer.everhour_id IS NOT NULL
 SQL;
         $this->exec($sql);
     }
