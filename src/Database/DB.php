@@ -149,8 +149,10 @@ SQL;
     public function getIssueData()
     {
         $sql = <<<SQL
-            SELECT issue.*, sprint.everhour_id as sprint_everhour_id, issue.everhour_id as issue_everhour_id  FROM `issue`
+            SELECT issue.*, sprint.everhour_id as sprint_everhour_id, issue.everhour_id as issue_everhour_id, issue_buffer.name != issue.name as is_changed
+            FROM `issue`
             LEFT JOIN `sprint` ON issue.sprint_jira_id = sprint.jira_id
+            LEFT JOIN issue_buffer on issue_buffer.everhour_id = issue.everhour_id
 SQL;
         return $this->fetch($sql);
     }

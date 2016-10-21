@@ -86,8 +86,7 @@ class EverhourDownloader extends Downloader
                 $api->createIssue($data);
             }
 
-            if (!empty($issue['everhour_id']) && $issue['is_closed']) {
-                $requests++;
+            if (!empty($issue['everhour_id']) && ($issue['is_closed'] || $issue['is_changed'])) {
                 $api->updateIssue($issue['everhour_id'], $data);
             }
 
