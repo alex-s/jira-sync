@@ -10,9 +10,18 @@ class EverhourDownloader extends Downloader
         /** @var Api $api */
         $api = $this->api;
         $sections = $api->getSections();
+        $everhourUsers = $api->getUsers();
 
         $sectionBuffer = [];
         $issueBuffer = [];
+        $users = [];
+
+        foreach ($everhourUsers as $user) {
+            $users[] = [
+                'id' => $user['id'],
+                'name' => $user['name'],
+            ];
+        }
 
         foreach ($sections as $section) {
             $sectionBuffer[] = [
@@ -22,9 +31,24 @@ class EverhourDownloader extends Downloader
 
             if (isset($section['tasks'])) {
                 foreach ($section['tasks'] as $issue) {
+                    $timeSpent = 0;
+                    $mostTrackedTime = 0;
+                    $mostTrackedUserId = 0;
+
+                    foreach ($issue['taskUsers'] as $user) {
+                        if ($user['time'] > $mostTrackedTime) {
+                            $mostTrackedTime = $user['time'];
+                            $mostTrackedUserId = $user['userId'];
+                        }
+
+                        $timeSpent += $user['time'];
+                    }
+
                     $issueBuffer[] = [
                         'everhour_id' => $issue['id'],
                         'name' => $issue['name'],
+                        'time_spent' => $timeSpent,
+                        'user_id' => $mostTrackedUserId,
                     ];
                 }
             }
@@ -35,9 +59,10 @@ class EverhourDownloader extends Downloader
 
         $this->db->insertArray('sprint_buffer', $sectionBuffer);
         $this->db->insertArray('issue_buffer', $issueBuffer);
+        $this->db->insertArray('user', $users);
 
-        $this->db->mergeBuffer('sprint');
-        $this->db->mergeBuffer('issue');
+        $this->db->mergeSprintBuffer();
+        $this->db->mergeIssueBuffer();
     }
 
     public function upload($isKanban)

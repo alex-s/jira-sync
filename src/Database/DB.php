@@ -121,13 +121,27 @@ SQL;
         $this->exec($sql);
     }
 
-    public function mergeBuffer($table)
+    public function mergeSprintBuffer()
     {
         $sql = <<<SQL
-            UPDATE {$table} as origin
-            LEFT JOIN {$table}_buffer as buffer on origin.name = buffer.name
-            SET origin.everhour_id = buffer.everhour_id
-            WHERE buffer.everhour_id IS NOT NULL
+            UPDATE sprint
+            LEFT JOIN sprint_buffer on sprint.name = sprint_buffer.name
+            SET sprint.everhour_id = sprint_buffer.everhour_id
+            WHERE sprint_buffer.everhour_id IS NOT NULL
+SQL;
+        $this->exec($sql);
+    }
+
+    public function mergeIssueBuffer()
+    {
+        $sql = <<<SQL
+            UPDATE issue
+            LEFT JOIN issue_buffer on issue.name = issue_buffer.name
+            SET 
+                issue.everhour_id = issue_buffer.everhour_id, 
+                issue.time_spent = issue_buffer.time_spent, 
+                issue.user_id = issue_buffer.user_id
+            WHERE issue.everhour_id IS NOT NULL
 SQL;
         $this->exec($sql);
     }

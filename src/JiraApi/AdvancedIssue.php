@@ -51,4 +51,9 @@ class AdvancedIssue extends Issue
 
         return $this->getStatusId($status);
     }
+
+    public function getStoryPoints()
+    {
+        return $this->get('Story Points');
+    }
 }

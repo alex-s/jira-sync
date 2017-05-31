@@ -39,4 +39,9 @@ class Api extends JiraApi
     {
         $this->api(self::REQUEST_PUT, "/tasks/{$id}", $data);
     }
+
+    public function getUsers()
+    {
+        return $this->api(self::REQUEST_GET, "/team/users")->getResult();
+    }
 }

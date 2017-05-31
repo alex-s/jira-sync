@@ -43,7 +43,8 @@ class JiraDownloader extends Downloader
                 'jira_id' => $issue->getId(),
                 'name' => $issue->getKey() . ' ' . $issue->getSummary(),
                 'sprint_jira_id' => !$isKanban ? $issue->getSprintId() : AdvancedIssue::DEFAULT_SPRINT_ID,
-                'is_closed' => (int)($issue->getStatus()["name"] == 'Resolved' || $issue->getStatus()["name"] == 'Closed')
+                'is_closed' => (int)($issue->getStatus()["name"] == 'Resolved' || $issue->getStatus()["name"] == 'Closed'),
+                'estimation' => $issue->getStoryPoints()
             ];
         }
 
