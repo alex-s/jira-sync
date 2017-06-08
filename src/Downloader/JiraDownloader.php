@@ -9,7 +9,7 @@ class JiraDownloader extends Downloader
 {
     private $projectKey;
 
-    function __construct($db, $api, $projectKey)
+    public function __construct($db, $api, $projectKey)
     {
         $this->projectKey = $projectKey;
         parent::__construct($db, $api);

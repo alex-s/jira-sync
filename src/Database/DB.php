@@ -136,12 +136,23 @@ SQL;
     {
         $sql = <<<SQL
             UPDATE issue
+            LEFT JOIN issue_buffer on issue.everhour_id = issue_buffer.everhour_id
+            SET 
+                issue.name = issue_buffer.name, 
+                issue.time_spent = issue_buffer.time_spent, 
+                issue.user_id = issue_buffer.user_id
+            WHERE issue.everhour_id IS NOT NULL AND issue.everhour_id != ''
+SQL;
+        $this->exec($sql);
+
+        $sql = <<<SQL
+            UPDATE issue
             LEFT JOIN issue_buffer on issue.name = issue_buffer.name
             SET 
                 issue.everhour_id = issue_buffer.everhour_id, 
                 issue.time_spent = issue_buffer.time_spent, 
                 issue.user_id = issue_buffer.user_id
-            WHERE issue.everhour_id IS NOT NULL
+            WHERE issue.everhour_id IS NULL OR issue.everhour_id = ''
 SQL;
         $this->exec($sql);
     }
