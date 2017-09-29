@@ -17,12 +17,12 @@ class Api extends JiraApi
 
     public function getSections()
     {
-        return $this->api(self::REQUEST_GET, "/internal-projects/{$this->projectKey}/sections")->getResult();
+        return $this->api(self::REQUEST_GET, "/projects/{$this->projectKey}/sections")->getResult();
     }
 
     public function createSection($data)
     {
-        $this->api(self::REQUEST_POST, "/internal-projects/{$this->projectKey}/sections", $data);
+        $this->api(self::REQUEST_POST, "/projects/{$this->projectKey}/sections", $data);
     }
 
     public function updateSection($id, $data)
@@ -32,7 +32,7 @@ class Api extends JiraApi
 
     public function createIssue($data)
     {
-        $this->api(self::REQUEST_POST, "/internal-projects/{$this->projectKey}/tasks", $data);
+        $this->api(self::REQUEST_POST, "/projects/{$this->projectKey}/tasks", $data);
     }
 
     public function updateIssue($id, $data)
@@ -43,5 +43,10 @@ class Api extends JiraApi
     public function getUsers()
     {
         return $this->api(self::REQUEST_GET, "/team/users")->getResult();
+    }
+
+    public function getTasks()
+    {
+        return $this->api(self::REQUEST_GET, "/projects/{$this->projectKey}/tasks")->getResult();
     }
 }

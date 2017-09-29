@@ -11,7 +11,7 @@ class EverhourDownloader extends Downloader
         $api = $this->api;
         $sections = $api->getSections();
         $everhourUsers = $api->getUsers();
-
+        $everhourTasks = $api->getTasks();
         $sectionBuffer = [];
         $issueBuffer = [];
         $users = [];
@@ -28,32 +28,30 @@ class EverhourDownloader extends Downloader
                 'everhour_id' => $section['id'],
                 'name' => $section['name'],
             ];
+        }
 
-            if (isset($section['tasks'])) {
-                foreach ($section['tasks'] as $issue) {
-                    $timeSpent = 0;
-                    $mostTrackedTime = 0;
-                    $mostTrackedUserId = 0;
+        foreach($everhourTasks as $task) {
+            $timeSpent = isset($task['time']['total']) ? $task['time']['total'] : 0;
+            $mostTrackedTime = 0;
+            $mostTrackedUserId = 0;
 
-                    foreach ($issue['taskUsers'] as $user) {
-                        if ($user['time'] > $mostTrackedTime) {
-                            $mostTrackedTime = $user['time'];
-                            $mostTrackedUserId = $user['userId'];
-                        }
-
-                        $timeSpent += $user['time'];
+            if (isset($task['time']['users'])) {
+                foreach ($task['time']['users'] as $userId => $time) {
+                    if ($time > $mostTrackedTime) {
+                        $mostTrackedTime = $time;
+                        $mostTrackedUserId = $userId;
                     }
-
-                    $issueBuffer[] = [
-                        'everhour_id' => $issue['id'],
-                        'name' => $issue['name'],
-                        'time_spent' => $timeSpent,
-                        'user_id' => $mostTrackedUserId,
-                    ];
                 }
             }
 
+            $issueBuffer[] = [
+                'everhour_id' => $task['id'],
+                'name' => $task['name'],
+                'time_spent' => $timeSpent,
+                'user_id' => $mostTrackedUserId,
+            ];
         }
+
         $this->db->clearTable('sprint_buffer');
         $this->db->clearTable('issue_buffer');
 
@@ -104,7 +102,7 @@ class EverhourDownloader extends Downloader
         foreach ($issues as $issue) {
             print(sprintf('%s %d issue from %d' . PHP_EOL, empty($issue['everhour_id']) ? 'create' : 'update', $i, $count));
 
-            $data = ['name' => $issue['name'], 'status' => $issue['is_closed'] ? 'closed' : 'open', 'section' => ['id' => $issue['sprint_everhour_id']]];
+            $data = ['name' => $issue['name'], 'status' => $issue['is_closed'] ? 'closed' : 'open', 'section' => $issue['sprint_everhour_id']];
 
             if (empty($issue['everhour_id']) && !$issue['is_closed']) {
                 $requests++;
