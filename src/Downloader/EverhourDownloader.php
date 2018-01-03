@@ -78,63 +78,22 @@ class EverhourDownloader extends Downloader
         }
     }
 
-    public function upload()
+    public function uploadIssues(Logger $logger, $newIssues, $updatedIssues)
     {
         /** @var Api $api */
         $api = $this->api;
-        $newSections = $this->db->getSprintData(false);
-        $requests = 0;
 
-        $count = count($newSections);
-        $i = 1;
-        foreach ($newSections as $section) {
-            $requests++;
-            print(sprintf('create %d section from %d' . PHP_EOL, $i, $count));
-            $data = ['name' => $section['name']];
-            $api->createSection($data);
+        foreach ($newIssues as $issue) {
+            $logger->info(sprintf(' - create issue %s', $issue['name']));
+            $api->newIssue(['name' => $issue['name']]);
             sleep(0.1);
-            $i++;
         }
 
-        print("everhour sync 1" . PHP_EOL);
-        $this->download();
-
-        $allSections = $this->db->getSprintData();
-        $count = count($allSections);
-        $i = 1;
-        foreach ($allSections as $section) {
-            $requests++;
-            print(sprintf('update %d section from %d' . PHP_EOL, $i, $count));
-            $data = ['name' => $section['name'], 'position' => $section['position'], 'status' => $section['status'] ? 'open' : 'archived'];
-            $api->updateSection($section['everhour_id'], $data);
+        foreach ($updatedIssues as $issue) {
+            $logger->info(sprintf(' - update section %s', $issue['name']));
+            $data = ['name' => $issue['name'], 'status' => $issue['status'] ? 'open' : 'closed', 'section' => $issue['sprint_everhour_id']];
+            $api->updateIssue($issue['everhour_id'], $data);
             sleep(0.1);
-            $i++;
         }
-
-        $issues = $this->db->getIssueData();
-        $count = count($issues);
-        $i = 1;
-        foreach ($issues as $issue) {
-            print(sprintf('%s %d issue from %d' . PHP_EOL, empty($issue['everhour_id']) ? 'create' : 'update', $i, $count));
-
-            $data = ['name' => $issue['name'], 'status' => $issue['is_closed'] ? 'closed' : 'open', 'section' => $issue['sprint_everhour_id']];
-
-            if (empty($issue['everhour_id']) && !$issue['is_closed']) {
-                $requests++;
-                $api->newIssue($data);
-            }
-
-            if (!empty($issue['everhour_id']) && ($issue['is_closed'] || $issue['is_changed'])) {
-                $api->updateIssue($issue['everhour_id'], $data);
-            }
-
-            sleep(0.1);
-            $i++;
-        }
-
-        print("everhour sync 2".  PHP_EOL);
-        $this->download();
-
-        return $requests;
     }
 }

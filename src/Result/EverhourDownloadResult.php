@@ -17,7 +17,7 @@ class EverhourDownloadResult
 
     public function __toString()
     {
-        return sprintf(' - Downloaded %d sections, %d issues and %d users', count($this->sections), count($this->issues), count($this->users));
+        return sprintf(' - downloaded %d sections, %d issues and %d users', count($this->sections), count($this->issues), count($this->users));
     }
 
     /**

@@ -15,7 +15,7 @@ class JiraDownloadResult
 
     public function __toString()
     {
-        return sprintf(' - Downloaded %d sprints and %d issues', count($this->sprints), count($this->issues));
+        return sprintf(' - downloaded %d sprints and %d issues', count($this->sprints), count($this->issues));
     }
 
     /**

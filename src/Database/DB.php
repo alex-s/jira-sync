@@ -128,15 +128,17 @@ SQL;
         $sql = <<<SQL
             UPDATE sprint
             JOIN sprint_buffer ON sprint.everhour_id = sprint_buffer.everhour_id
-            SET publish_status = IF(sprint.name != sprint_buffer.name OR sprint.status != sprint_buffer.status, 1, 2)
+            SET 
+                publish_status = IF(sprint.name != sprint_buffer.name OR sprint.status != sprint_buffer.status, 1, 2)
 SQL;
         $this->exec($sql);
 
         $sql = <<<SQL
             UPDATE sprint
             JOIN sprint_buffer ON sprint.name = sprint_buffer.name
-            SET publish_status = IF(sprint.status != sprint_buffer.status, 1, 2),
-            sprint.everhour_id = sprint_buffer.everhour_id
+            SET 
+                publish_status = IF(sprint.status != sprint_buffer.status, 1, 2),
+                sprint.everhour_id = sprint_buffer.everhour_id
             WHERE sprint.everhour_id IS NULL
 SQL;
         $this->exec($sql);
@@ -154,7 +156,7 @@ SQL;
             UPDATE issue
             LEFT JOIN issue_buffer on issue.everhour_id = issue_buffer.everhour_id
             SET 
-                issue.name = issue_buffer.name, 
+                publish_status = IF(issue.name != issue_buffer.name OR issue.status != issue_buffer.status, 1, 2),
                 issue.time_spent = issue_buffer.time_spent, 
                 issue.user_id = issue_buffer.user_id
             WHERE issue.everhour_id IS NOT NULL AND issue.everhour_id != ''
@@ -165,23 +167,13 @@ SQL;
             UPDATE issue
             LEFT JOIN issue_buffer on issue.name = issue_buffer.name
             SET 
+                publish_status = IF(issue.status != issue_buffer.status, 1, 2),
                 issue.everhour_id = issue_buffer.everhour_id, 
                 issue.time_spent = issue_buffer.time_spent, 
                 issue.user_id = issue_buffer.user_id
             WHERE issue.everhour_id IS NULL OR issue.everhour_id = ''
 SQL;
         $this->exec($sql);
-    }
-
-    public function getIssueData()
-    {
-        $sql = <<<SQL
-            SELECT issue.*, sprint.everhour_id as sprint_everhour_id, issue.everhour_id as issue_everhour_id, issue_buffer.name != issue.name as is_changed
-            FROM `issue`
-            LEFT JOIN `sprint` ON issue.sprint_jira_id = sprint.jira_id
-            LEFT JOIN issue_buffer on issue_buffer.everhour_id = issue.everhour_id
-SQL;
-        return $this->fetch($sql);
     }
 
     public function clearTable($table)
@@ -224,6 +216,25 @@ SQL;
             UNION 
             SELECT everhour_id, name, 0 as status, 999 as position FROM sprint_buffer
             WHERE status = 1
+SQL;
+        return $this->fetch($sql);
+    }
+
+    public function getNewIssues()
+    {
+        $sql = <<<SQL
+            SELECT name FROM issue
+            WHERE publish_status = 0 AND status = 0
+SQL;
+        return $this->fetch($sql);
+    }
+
+    public function getUpdatedIssues()
+    {
+        $sql = <<<SQL
+            SELECT issue.name as name, issue.status as status, sprint.everhour_id as sprint_everhour_id, issue.everhour_id as issue_everhour_id FROM issue
+            LEFT JOIN sprint ON issue.sprint_jira_id = sprint.jira_id
+            WHERE issue.publish_status = 1
 SQL;
         return $this->fetch($sql);
     }

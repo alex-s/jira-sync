@@ -46,25 +46,30 @@ $jiraIssues = $jiraSync->download($logger);
 $logger->info($jiraIssues);
 $db->createJiraEntries($jiraIssues);
 
+
 $everhourSync = new EverhourDownloader($everhourApi);
 $logger->info('Download issues from Everhour');
 $everhourIssues = $everhourSync->download();
 $logger->info($everhourIssues);
 $db->createBufferEntries($everhourIssues);
 
-$logger->info('Upload Sections');
+
 $db->mergeSprintBuffer();
+$logger->info('Upload Sections');
 
 $newSection = $db->getNewSections();
 $updatedSection = $db->getUpdatedSections();
 $everhourSync->uploadSections($logger, $newSection, $updatedSection);
-$logger->info(sprintf('Created %d sections, updated %d', count($newSection), count($updatedSection)));
-die;
-$logger->info('Merge Issues');
-$db->mergeIssueBuffer();
-die;
-$requests = $everhourSync->upload();
+$logger->info(sprintf(' - created %d sections, updated %d sections', count($newSection), count($updatedSection)));
 
-print("Done".PHP_EOL);
-print("Requests made: {$requests}".PHP_EOL);
-print(sprintf("memory: %s kb, time: %f min" . PHP_EOL, memory_get_usage() /100, (time()-$startTime)/60));
+
+$db->mergeIssueBuffer();
+$logger->info('Upload Issues');
+$newIssues = $db->getNewIssues();
+$updatedIssues = $db->getUpdatedIssues();
+$everhourSync->uploadIssues($logger, $newIssues, $updatedIssues);
+$logger->info(sprintf(' - created %d issues, updated %d issues', count($newIssues), count($updatedIssues)));
+
+
+$logger->info('Done');
+$logger->info(sprintf('memory usage: %s kb, time: %f min' . PHP_EOL, memory_get_usage() /100, (time()-$startTime)/60));
