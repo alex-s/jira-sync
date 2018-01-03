@@ -1,26 +1,20 @@
 <?php
 namespace Sync\Downloader;
 
-use Sync\Database\DB;
+use Monolog\Logger;
 use Sync\JiraApi\AdvancedApi;
 
 abstract class Downloader
 {
     /**
-     * @var DB
-     */
-    protected $db;
-
-    /**
      * @var AdvancedApi
      */
     protected $api;
 
-    function __construct($db, $api)
+    public function __construct($api)
     {
-        $this->db = $db;
         $this->api = $api;
     }
 
-    public abstract function download($isKanban = false);
+    public abstract function download(Logger $logger = null);
 }

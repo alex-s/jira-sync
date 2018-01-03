@@ -1,11 +1,13 @@
 <?php
 namespace Sync\Downloader;
 
+use Monolog\Logger;
 use Sync\EverhourApi\Api;
+use Sync\Result\EverhourDownloadResult;
 
 class EverhourDownloader extends Downloader
 {
-    public function download($isKanban = false)
+    public function download(Logger $logger = null)
     {
         /** @var Api $api */
         $api = $this->api;
@@ -27,6 +29,7 @@ class EverhourDownloader extends Downloader
             $sectionBuffer[] = [
                 'everhour_id' => $section['id'],
                 'name' => $section['name'],
+                'status' => $section['status'] === 'open' ? 1 : 0,
             ];
         }
 
@@ -49,21 +52,33 @@ class EverhourDownloader extends Downloader
                 'name' => $task['name'],
                 'time_spent' => $timeSpent,
                 'user_id' => $mostTrackedUserId,
+                'status' => $task['status'] === 'open' ? 1 : 0,
             ];
         }
 
-        $this->db->clearTable('sprint_buffer');
-        $this->db->clearTable('issue_buffer');
-
-        $this->db->insertArray('sprint_buffer', $sectionBuffer);
-        $this->db->insertArray('issue_buffer', $issueBuffer);
-        $this->db->insertArray('user', $users);
-
-        $this->db->mergeSprintBuffer();
-        $this->db->mergeIssueBuffer();
+        return new EverhourDownloadResult($sectionBuffer, $issueBuffer, $users);
     }
 
-    public function upload($isKanban)
+    public function uploadSections(Logger $logger, $newSections, $updatedSections)
+    {
+        /** @var Api $api */
+        $api = $this->api;
+
+        foreach ($newSections as $section) {
+            $logger->info(sprintf(' - create section %s', $section['name']));
+            $api->createSection(['name' => $section['name']]);
+            sleep(0.1);
+        }
+
+        foreach ($updatedSections as $section) {
+            $logger->info(sprintf(' - update section %s', $section['name']));
+            $data = ['name' => $section['name'], 'position' => $section['position'], 'status' => $section['status'] ? 'open' : 'archived'];
+            $api->updateSection($section['everhour_id'], $data);
+            sleep(0.1);
+        }
+    }
+
+    public function upload()
     {
         /** @var Api $api */
         $api = $this->api;
@@ -90,7 +105,7 @@ class EverhourDownloader extends Downloader
         foreach ($allSections as $section) {
             $requests++;
             print(sprintf('update %d section from %d' . PHP_EOL, $i, $count));
-            $data = ['name' => $section['name'], 'position' => $section['position'], 'status' => !$isKanban ? ($section['status'] > 3 ? 'archived' : 'open') : 'open'];
+            $data = ['name' => $section['name'], 'position' => $section['position'], 'status' => $section['status'] ? 'open' : 'archived'];
             $api->updateSection($section['everhour_id'], $data);
             sleep(0.1);
             $i++;
@@ -106,7 +121,7 @@ class EverhourDownloader extends Downloader
 
             if (empty($issue['everhour_id']) && !$issue['is_closed']) {
                 $requests++;
-                $api->createIssue($data);
+                $api->newIssue($data);
             }
 
             if (!empty($issue['everhour_id']) && ($issue['is_closed'] || $issue['is_changed'])) {

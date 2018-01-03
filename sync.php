@@ -10,6 +10,16 @@ use \Sync\EverhourApi\Api;
 use \Sync\EverhourApi\ApiKeyAuth;
 use \Sync\Downloader\JiraDownloader;
 use \Sync\Downloader\EverhourDownloader;
+use \Monolog\Logger;
+use \Monolog\Handler\StreamHandler;
+use \Monolog\Formatter\LineFormatter;
+
+$logger = new Logger('default');
+$handler = new StreamHandler('php://stdout');
+$output = "[%datetime%] %level_name%: %message%\n";
+$formatter = new LineFormatter($output);
+$handler->setFormatter($formatter);
+$logger->pushHandler($handler);
 
 $startTime = time();
 
@@ -23,26 +33,37 @@ $jiraApi = new AdvancedApi($params['jira_url'],
     new HtAccessCookieAuth($params['jira_login'], $params['jira_password'], $params['htaccess_user'], $params['htaccess_pass']),
     new AdvancedCurlClient()
 );
-$isKanban = isset($argv[1]) && $argv[1] == 'kanban';
-
-print('Run in ' . ($isKanban ? 'KANBAN':'AGILE') . ' mode' . PHP_EOL);
 
 $everhourApi = new Api($params['eh_url'], $params['eh_project_key'],
     new ApiKeyAuth($params['eh_api_key']),
     new AdvancedCurlClient()
 );
 
-$jiraSync = new JiraDownloader($db, $jiraApi, $params['jira_project_key']);
-$everhourSync = new EverhourDownloader($db, $everhourApi);
+$jiraSync = new JiraDownloader($jiraApi, $params['jira_project_key'], 2400);
+$logger->info('Download issues from Jira');
+$logger->info(sprintf(' - with filter "%s"', $jiraSync->getFilter()));
+$jiraIssues = $jiraSync->download($logger);
+$logger->info($jiraIssues);
+$db->createJiraEntries($jiraIssues);
 
-print('Dowload issues from Jira'.PHP_EOL);
-$jiraSync->download($isKanban);
+$everhourSync = new EverhourDownloader($everhourApi);
+$logger->info('Download issues from Everhour');
+$everhourIssues = $everhourSync->download();
+$logger->info($everhourIssues);
+$db->createBufferEntries($everhourIssues);
 
-print('Sync issues with everhour'.PHP_EOL);
-$everhourSync->download();
+$logger->info('Upload Sections');
+$db->mergeSprintBuffer();
 
-print('Upload issues to everhour'.PHP_EOL);
-$requests = $everhourSync->upload($isKanban);
+$newSection = $db->getNewSections();
+$updatedSection = $db->getUpdatedSections();
+$everhourSync->uploadSections($logger, $newSection, $updatedSection);
+$logger->info(sprintf('Created %d sections, updated %d', count($newSection), count($updatedSection)));
+die;
+$logger->info('Merge Issues');
+$db->mergeIssueBuffer();
+die;
+$requests = $everhourSync->upload();
 
 print("Done".PHP_EOL);
 print("Requests made: {$requests}".PHP_EOL);

@@ -3,6 +3,8 @@ namespace Sync\Database;
 
 
 use chobie\Jira\Api\Exception;
+use Sync\Result\EverhourDownloadResult;
+use Sync\Result\JiraDownloadResult;
 
 class DB
 {
@@ -13,7 +15,7 @@ class DB
     private $pass;
     private $database;
 
-    function __construct($host, $user, $pass, $database)
+    public function __construct($host, $user, $pass, $database)
     {
         $this->host = $host;
         $this->user = $user;
@@ -125,9 +127,23 @@ SQL;
     {
         $sql = <<<SQL
             UPDATE sprint
-            LEFT JOIN sprint_buffer on sprint.name = sprint_buffer.name
-            SET sprint.everhour_id = sprint_buffer.everhour_id
-            WHERE sprint_buffer.everhour_id IS NOT NULL
+            JOIN sprint_buffer ON sprint.everhour_id = sprint_buffer.everhour_id
+            SET publish_status = IF(sprint.name != sprint_buffer.name OR sprint.status != sprint_buffer.status, 1, 2)
+SQL;
+        $this->exec($sql);
+
+        $sql = <<<SQL
+            UPDATE sprint
+            JOIN sprint_buffer ON sprint.name = sprint_buffer.name
+            SET publish_status = IF(sprint.status != sprint_buffer.status, 1, 2),
+            sprint.everhour_id = sprint_buffer.everhour_id
+            WHERE sprint.everhour_id IS NULL
+SQL;
+        $this->exec($sql);
+
+        $sql = <<<SQL
+            DELETE sprint_buffer FROM sprint_buffer
+            JOIN sprint ON sprint.everhour_id = sprint_buffer.everhour_id
 SQL;
         $this->exec($sql);
     }
@@ -157,20 +173,6 @@ SQL;
         $this->exec($sql);
     }
 
-    public function getSprintData($isAll = true)
-    {
-        $where = 1;
-
-        if (!$isAll) {
-            $where = 'everhour_id IS NULL';
-        }
-        $sql = <<<SQL
-            SELECT * FROM `sprint`
-            WHERE {$where}
-SQL;
-        return $this->fetch($sql);
-    }
-
     public function getIssueData()
     {
         $sql = <<<SQL
@@ -185,5 +187,44 @@ SQL;
     public function clearTable($table)
     {
         $this->exec("DELETE FROM {$table}");
+    }
+
+    public function createJiraEntries(JiraDownloadResult $result)
+    {
+        $this->insertArray('sprint', $result->getSprints());
+        $this->insertArray('issue', $result->getIssues());
+
+        $this->rebuildSprintOrder();
+    }
+
+    public function createBufferEntries(EverhourDownloadResult $result)
+    {
+        $this->clearTable('sprint_buffer');
+        $this->clearTable('issue_buffer');
+
+        $this->insertArray('sprint_buffer', $result->getSections());
+        $this->insertArray('issue_buffer', $result->getIssues());
+        $this->insertArray('user', $result->getUsers());
+    }
+
+    public function getNewSections()
+    {
+        $sql = <<<SQL
+            SELECT name FROM sprint
+            WHERE publish_status = 0 AND status = 0
+SQL;
+        return $this->fetch($sql);
+    }
+
+    public function getUpdatedSections()
+    {
+        $sql = <<<SQL
+            SELECT everhour_id, name, status, position FROM sprint
+            WHERE publish_status = 1
+            UNION 
+            SELECT everhour_id, name, 0 as status, 999 as position FROM sprint_buffer
+            WHERE status = 1
+SQL;
+        return $this->fetch($sql);
     }
 }
