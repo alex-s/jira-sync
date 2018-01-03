@@ -154,7 +154,7 @@ SQL;
     {
         $sql = <<<SQL
             UPDATE issue
-            LEFT JOIN issue_buffer on issue.everhour_id = issue_buffer.everhour_id
+            JOIN issue_buffer on issue.everhour_id = issue_buffer.everhour_id
             SET 
                 publish_status = IF(issue.name != issue_buffer.name OR issue.status != issue_buffer.status, 1, 2),
                 issue.time_spent = issue_buffer.time_spent, 
@@ -165,7 +165,7 @@ SQL;
 
         $sql = <<<SQL
             UPDATE issue
-            LEFT JOIN issue_buffer on issue.name = issue_buffer.name
+            JOIN issue_buffer on issue.name = issue_buffer.name
             SET 
                 publish_status = IF(issue.status != issue_buffer.status, 1, 2),
                 issue.everhour_id = issue_buffer.everhour_id, 
@@ -203,7 +203,7 @@ SQL;
     {
         $sql = <<<SQL
             SELECT name FROM sprint
-            WHERE publish_status = 0 AND status = 0
+            WHERE publish_status = 0 AND status = 1
 SQL;
         return $this->fetch($sql);
     }
@@ -223,8 +223,9 @@ SQL;
     public function getNewIssues()
     {
         $sql = <<<SQL
-            SELECT name FROM issue
-            WHERE publish_status = 0 AND status = 0
+            SELECT issue.name, sprint.everhour_id as sprint_everhour_id FROM issue
+            JOIN sprint ON issue.sprint_jira_id = sprint.jira_id
+            WHERE issue.publish_status = 0 AND issue.status = 1
 SQL;
         return $this->fetch($sql);
     }
@@ -233,7 +234,7 @@ SQL;
     {
         $sql = <<<SQL
             SELECT issue.name as name, issue.status as status, sprint.everhour_id as sprint_everhour_id, issue.everhour_id as issue_everhour_id FROM issue
-            LEFT JOIN sprint ON issue.sprint_jira_id = sprint.jira_id
+            JOIN sprint ON issue.sprint_jira_id = sprint.jira_id
             WHERE issue.publish_status = 1
 SQL;
         return $this->fetch($sql);

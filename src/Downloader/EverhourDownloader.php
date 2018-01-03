@@ -85,14 +85,14 @@ class EverhourDownloader extends Downloader
 
         foreach ($newIssues as $issue) {
             $logger->info(sprintf(' - create issue %s', $issue['name']));
-            $api->newIssue(['name' => $issue['name']]);
+            $api->newIssue(['name' => $issue['name'], 'section' => $issue['sprint_everhour_id']]);
             sleep(0.1);
         }
 
         foreach ($updatedIssues as $issue) {
-            $logger->info(sprintf(' - update section %s', $issue['name']));
+            $logger->info(sprintf(' - update issue %s', $issue['name']));
             $data = ['name' => $issue['name'], 'status' => $issue['status'] ? 'open' : 'closed', 'section' => $issue['sprint_everhour_id']];
-            $api->updateIssue($issue['everhour_id'], $data);
+            $api->updateIssue($issue['issue_everhour_id'], $data);
             sleep(0.1);
         }
     }
