@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS `issue` (
   `everhour_id` VARCHAR(20) DEFAULT NULL,
   `name` varchar(200) COLLATE utf8_bin NOT NULL,
   `sprint_jira_id` bigint(20) unsigned NOT NULL,
+  `sprint_everhour_id` bigint(20) unsigned NOT NULL,
   `time_spent` bigint(20) unsigned DEFAULT NULL,
   `estimation` int(5) unsigned DEFAULT NULL,
   `user_id` int(5) unsigned DEFAULT NULL,
@@ -37,6 +38,7 @@ CREATE TABLE IF NOT EXISTS `sprint_buffer` (
 
 CREATE TABLE IF NOT EXISTS `issue_buffer` (
   `everhour_id` VARCHAR(20) NOT NULL,
+  `sprint_everhour_id` VARCHAR(20) NOT NULL,
   `name` varchar(200) COLLATE utf8_bin NOT NULL,
   `time_spent` bigint(20) unsigned DEFAULT NULL,
   `user_id` bigint(20) unsigned DEFAULT NULL,

@@ -49,6 +49,7 @@ class EverhourDownloader extends Downloader
 
             $issueBuffer[] = [
                 'everhour_id' => $task['id'],
+                'sprint_everhour_id' => $task['section'],
                 'name' => $task['name'],
                 'time_spent' => $timeSpent,
                 'user_id' => $mostTrackedUserId,
@@ -92,7 +93,7 @@ class EverhourDownloader extends Downloader
         foreach ($updatedIssues as $issue) {
             $logger->info(sprintf(' - update issue %s', $issue['name']));
             $data = ['name' => $issue['name'], 'status' => $issue['status'] ? 'open' : 'closed', 'section' => $issue['sprint_everhour_id']];
-            $api->updateIssue($issue['issue_everhour_id'], $data);
+            $api->updateIssue($issue['everhour_id'], $data);
             sleep(0.1);
         }
     }

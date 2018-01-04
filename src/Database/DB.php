@@ -155,10 +155,16 @@ SQL;
         $sql = <<<SQL
             UPDATE issue
             JOIN issue_buffer on issue.everhour_id = issue_buffer.everhour_id
+            JOIN sprint ON sprint.jira_id = issue.sprint_jira_id
             SET 
-                publish_status = IF(issue.name != issue_buffer.name OR issue.status != issue_buffer.status, 1, 2),
+                issue.publish_status = IF(
+                    issue.name != issue_buffer.name 
+                    OR issue.status != issue_buffer.status 
+                    OR issue_buffer.sprint_everhour_id != sprint.everhour_id,
+                1, 2),
                 issue.time_spent = issue_buffer.time_spent, 
-                issue.user_id = issue_buffer.user_id
+                issue.user_id = issue_buffer.user_id,
+                issue.sprint_everhour_id = sprint.everhour_id
             WHERE issue.everhour_id IS NOT NULL AND issue.everhour_id != ''
 SQL;
         $this->exec($sql);
@@ -166,9 +172,14 @@ SQL;
         $sql = <<<SQL
             UPDATE issue
             JOIN issue_buffer on issue.name = issue_buffer.name
+            JOIN sprint ON sprint.jira_id = issue.sprint_jira_id
             SET 
-                publish_status = IF(issue.status != issue_buffer.status, 1, 2),
+                issue.publish_status = IF(
+                    issue.status != issue_buffer.status OR 
+                    issue_buffer.sprint_everhour_id != sprint.everhour_id,
+                1, 2),
                 issue.everhour_id = issue_buffer.everhour_id, 
+                issue.sprint_everhour_id = sprint.everhour_id,
                 issue.time_spent = issue_buffer.time_spent, 
                 issue.user_id = issue_buffer.user_id
             WHERE issue.everhour_id IS NULL OR issue.everhour_id = ''
@@ -233,8 +244,7 @@ SQL;
     public function getUpdatedIssues()
     {
         $sql = <<<SQL
-            SELECT issue.name as name, issue.status as status, sprint.everhour_id as sprint_everhour_id, issue.everhour_id as issue_everhour_id FROM issue
-            JOIN sprint ON issue.sprint_jira_id = sprint.jira_id
+            SELECT name as name, status as status, sprint_everhour_id, everhour_id FROM issue
             WHERE issue.publish_status = 1
 SQL;
         return $this->fetch($sql);
