@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS `issue` (
   `jira_id` bigint(20) unsigned NOT NULL,
   `everhour_id` VARCHAR(20) DEFAULT NULL,
   `name` varchar(200) COLLATE utf8_bin NOT NULL,
-  `is_closed` tinyint(1) unsigned NOT NULL DEFAULT 0,
   `sprint_jira_id` bigint(20) unsigned NOT NULL,
   `time_spent` bigint(20) unsigned DEFAULT NULL,
   `estimation` int(5) unsigned DEFAULT NULL,

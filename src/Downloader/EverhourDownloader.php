@@ -7,7 +7,7 @@ use Sync\Result\EverhourDownloadResult;
 
 class EverhourDownloader extends Downloader
 {
-    public function download(Logger $logger = null)
+    public function download(Logger $logger)
     {
         /** @var Api $api */
         $api = $this->api;
@@ -29,7 +29,7 @@ class EverhourDownloader extends Downloader
             $sectionBuffer[] = [
                 'everhour_id' => $section['id'],
                 'name' => $section['name'],
-                'status' => $section['status'] === 'open' ? 1 : 0,
+                'status' => (int) $section['status'] === 'open',
             ];
         }
 
@@ -52,7 +52,7 @@ class EverhourDownloader extends Downloader
                 'name' => $task['name'],
                 'time_spent' => $timeSpent,
                 'user_id' => $mostTrackedUserId,
-                'status' => $task['status'] === 'open' ? 1 : 0,
+                'status' => (int) $task['status'] === 'open',
             ];
         }
 

@@ -12,14 +12,14 @@ class JiraDownloader extends Downloader
     private $projectKey;
     private $offset;
 
-    public function __construct($api, $projectKey, $offset)
+    public function __construct($api, $projectKey, $offset = null)
     {
         $this->projectKey = $projectKey;
         $this->offset = $offset;
         parent::__construct($api);
     }
 
-    public function download(Logger $logger = null)
+    public function download(Logger $logger)
     {
         $sprints = [];
         $issues = [];
@@ -27,6 +27,7 @@ class JiraDownloader extends Downloader
         $walker = new Walker($this->api);
         $walker->push($this->getFilter());
         $i = 0;
+
         foreach ($walker as $issue) {
             $i++;
 
@@ -41,6 +42,7 @@ class JiraDownloader extends Downloader
                 'name' => $issue->getSprintName(),
                 'status' => $issue->getSprintStatus()
             ];
+
             $issueId = $issue->getId();
             $status = $issue->getStatus()['name'];
 
@@ -48,8 +50,8 @@ class JiraDownloader extends Downloader
                 'jira_id' => $issueId,
                 'name' => $issue->getKey() . ' ' . $issue->getSummary(),
                 'sprint_jira_id' => $issue->getSprintId(),
-                'status' => (int) !($status === 'Resolved' || $status === 'Closed'),
-                'estimation' => $issue->getStoryPoints()
+                'status' => (int) !in_array($status, ['Resolved', 'Closed', 'Merged', 'Released'], true),
+                'estimation' => $issue->getStoryPoints(),
             ];
         }
 
@@ -58,6 +60,12 @@ class JiraDownloader extends Downloader
 
     public function getFilter()
     {
-        return "project = {$this->projectKey} AND id >= {$this->projectKey}-{$this->offset}";
+        $key = "project = {$this->projectKey}";
+
+        if ($this->offset !== null) {
+            $key .= " AND id >= {$this->projectKey}-{$this->offset}";
+        }
+
+        return $key;
     }
 }

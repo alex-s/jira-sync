@@ -16,5 +16,5 @@ abstract class Downloader
         $this->api = $api;
     }
 
-    public abstract function download(Logger $logger = null);
+    public abstract function download(Logger $logger);
 }

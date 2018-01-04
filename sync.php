@@ -49,7 +49,7 @@ $db->createJiraEntries($jiraIssues);
 
 $everhourSync = new EverhourDownloader($everhourApi);
 $logger->info('Download issues from Everhour');
-$everhourIssues = $everhourSync->download();
+$everhourIssues = $everhourSync->download($logger);
 $logger->info($everhourIssues);
 $db->createBufferEntries($everhourIssues);
 
