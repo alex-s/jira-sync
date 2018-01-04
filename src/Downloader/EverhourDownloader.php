@@ -29,7 +29,7 @@ class EverhourDownloader extends Downloader
             $sectionBuffer[] = [
                 'everhour_id' => $section['id'],
                 'name' => $section['name'],
-                'status' => (int) $section['status'] === 'open',
+                'status' => (int) ($section['status'] === 'open'),
             ];
         }
 
@@ -52,7 +52,7 @@ class EverhourDownloader extends Downloader
                 'name' => $task['name'],
                 'time_spent' => $timeSpent,
                 'user_id' => $mostTrackedUserId,
-                'status' => (int) $task['status'] === 'open',
+                'status' => (int) ($task['status'] === 'open'),
             ];
         }
 
