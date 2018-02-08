@@ -236,7 +236,10 @@ SQL;
         $sql = <<<SQL
             SELECT issue.name, sprint.everhour_id as sprint_everhour_id FROM issue
             JOIN sprint ON issue.sprint_jira_id = sprint.jira_id
-            WHERE issue.publish_status = 0 AND issue.status = 1
+            WHERE 
+              issue.publish_status = 0 AND 
+              issue.status = 1 AND 
+              sprint.status = 1
 SQL;
         return $this->fetch($sql);
     }
