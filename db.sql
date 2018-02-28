@@ -50,4 +50,4 @@ INSERT IGNORE INTO `sprint` (`jira_id`, `name`, `status`)
 VALUES (1, 'Management', 1), (2, 'Without Sprint', 1);
 
 INSERT IGNORE INTO `issue` (`jira_id`, `name`, `sprint_jira_id`, `status`)
-VALUES (1, 'Code review', 1, 1), (2, 'Meeting', 1, 1), (3, 'Management', 1, 1), (4, 'Issues Discuss', 1, 1), (5, 'Idle', 1, 1);
+VALUES (1, 'Code review', 1, 1), (2, 'Meeting', 1, 1), (3, 'Management', 1, 1), (4, 'Issues Discuss', 1, 1), (5, 'Idle', 1, 1), (6, 'Merge Branches', 1, 1);
