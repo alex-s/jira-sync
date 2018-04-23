@@ -10,15 +10,15 @@ class AdvancedApi extends Api
         /** @var HtAccessCookieAuth $auth */
         $auth = $this->authentication;
 
-        if (!$auth->isAuth()) {
-            $authData =  parent::api(self::REQUEST_POST, '/rest/auth/1/session', ["username" => $auth->getUserName(), "password" => $auth->getUserPass()], true);
-
-            if ($authData['session'] && $authData['session']['value']) {
-                $auth->setCookie($authData['session']['value']);
-            } else {
-                throw new Api\UnauthorizedException('Can\'t get cookie value');
-            }
-        }
+//        if (!$auth->isAuth()) {
+//            $authData =  parent::api(self::REQUEST_POST, '/rest/auth/1/session', ["username" => $auth->getUserName(), "password" => $auth->getUserPass()], true);
+//
+//            if ($authData['session'] && $authData['session']['value']) {
+//                $auth->setCookie($authData['session']['value']);
+//            } else {
+//                throw new Api\UnauthorizedException('Can\'t get cookie value');
+//            }
+//        }
 
         $result = parent::api($method,$url,$data,$return_as_array,$is_file,$debug);
 

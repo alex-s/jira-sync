@@ -17,7 +17,8 @@ class Api extends JiraApi
 
     public function getSections()
     {
-        return $this->api(self::REQUEST_GET, "/projects/{$this->projectKey}/sections")->getResult();
+        $result = $this->api(self::REQUEST_GET, "/projects/{$this->projectKey}/sections");
+        return $this->checkResult($result->getResult());
     }
 
     public function createSection($data)
@@ -40,17 +41,20 @@ class Api extends JiraApi
 
     public function updateIssue($id, $data)
     {
-        $this->api(self::REQUEST_PUT, "/tasks/{$id}", $data);
+        $result = $this->api(self::REQUEST_PUT, "/tasks/{$id}", $data);
+        $this->checkResult($result->getResult());
     }
 
     public function getUsers()
     {
-        return $this->api(self::REQUEST_GET, "/team/users")->getResult();
+        $result =  $this->api(self::REQUEST_GET, "/team/users");
+        return $this->checkResult($result->getResult());
     }
 
     public function getTasks()
     {
-        return $this->api(self::REQUEST_GET, "/projects/{$this->projectKey}/tasks")->getResult();
+        $result = $this->api(self::REQUEST_GET, "/projects/{$this->projectKey}/tasks");
+        return $this->checkResult($result->getResult());
     }
 
     private function checkResult($result)
@@ -58,5 +62,11 @@ class Api extends JiraApi
         if (isset($result['errors'])) {
             throw new \Exception(json_encode($result, JSON_PRETTY_PRINT));
         }
+
+        if (isset($result['code']) && $result['code'] == 403) {
+            throw new \Exception($result['message']);
+        }
+
+        return $result;
     }
 }

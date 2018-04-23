@@ -30,7 +30,8 @@ $db = new DB($params['db_host'], $params['db_user'], $params['db_pass'], $params
 $db->execFile(file_get_contents('db.sql'));
 
 $jiraApi = new AdvancedApi($params['jira_url'],
-    new HtAccessCookieAuth($params['jira_login'], $params['jira_password'], $params['htaccess_user'], $params['htaccess_pass']),
+    new \chobie\Jira\Api\Authentication\Basic($params['jira_login'], $params['jira_password']),
+//    new HtAccessCookieAuth($params['jira_login'], $params['jira_password'], $params['htaccess_user'], $params['htaccess_pass']),
     new AdvancedCurlClient()
 );
 
@@ -39,7 +40,7 @@ $everhourApi = new Api($params['eh_url'], $params['eh_project_key'],
     new AdvancedCurlClient()
 );
 
-$jiraSync = new JiraDownloader($jiraApi, $params['jira_project_key'], 2400);
+$jiraSync = new JiraDownloader($jiraApi, $params['jira_project_key'], 2500);
 $logger->info('Download issues from Jira');
 $logger->info(sprintf(' - with filter "%s"', $jiraSync->getFilter()));
 $jiraIssues = $jiraSync->download($logger);

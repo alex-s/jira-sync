@@ -29,13 +29,9 @@ class AdvancedCurlClient extends CurlClient
         curl_setopt($curl, CURLOPT_URL, $endpoint . $url);
         curl_setopt($curl, CURLOPT_HEADER, 0);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_USERPWD, sprintf('%s:%s', $credential->getId(), $credential->getPassword()));
+
         $headers = ['Content-Type: application/json;charset=UTF-8'];
-
-        if ($credential instanceof HtAccessCookieAuth) {
-            curl_setopt($curl, CURLOPT_USERPWD, sprintf('%s:%s', $credential->getId(), $credential->getPassword()));
-            $headers[] = 'cookie: JSESSIONID=' . $credential->getCookie();
-        }
-
         if ($credential instanceof ApiKeyAuth) {
             $headers[] = 'x-api-key:' . $credential->getApiKey();
         }
