@@ -65,9 +65,11 @@ class EverhourDownloader extends Downloader
         /** @var Api $api */
         $api = $this->api;
 
+        $updates = [];
         foreach ($newSections as $section) {
             $logger->info(sprintf(' - create section %s', $section['name']));
-            $api->createSection(['name' => $section['name']]);
+            $updates[$section['name']] = $api->createSection(['name' => $section['name']]);
+
             sleep(0.1);
         }
 
@@ -77,6 +79,8 @@ class EverhourDownloader extends Downloader
             $api->updateSection($section['everhour_id'], $data);
             sleep(0.1);
         }
+
+        return $updates;
     }
 
     public function uploadIssues(Logger $logger, $newIssues, $updatedIssues)

@@ -60,7 +60,8 @@ $logger->info('Upload Sections');
 
 $newSection = $db->getNewSections();
 $updatedSection = $db->getUpdatedSections();
-$everhourSync->uploadSections($logger, $newSection, $updatedSection);
+$updates = $everhourSync->uploadSections($logger, $newSection, $updatedSection);
+$db->applySectionsUpdates($updates);
 $logger->info(sprintf(' - created %d sections, updated %d sections', count($newSection), count($updatedSection)));
 
 

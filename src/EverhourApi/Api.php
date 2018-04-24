@@ -25,6 +25,8 @@ class Api extends JiraApi
     {
         $result = $this->api(self::REQUEST_POST, "/projects/{$this->projectKey}/sections", $data);
         $this->checkResult($result->getResult());
+
+        return $result->getResult()->id;
     }
 
     public function updateSection($id, $data)
@@ -63,7 +65,7 @@ class Api extends JiraApi
             throw new \Exception(json_encode($result, JSON_PRETTY_PRINT));
         }
 
-        if (isset($result['code']) && $result['code'] == 403) {
+        if (isset($result['code'])) {
             throw new \Exception($result['message']);
         }
 

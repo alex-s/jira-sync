@@ -17,7 +17,7 @@ class AdvancedIssue extends Issue
             case 'ACTIVE' : return 1;
             case 'FUTURE' : return 1;
             //3 status is for  management sprint
-            case 'BACKLOG' : return 0;
+            case 'BACKLOG' : return 1;
             case 'CLOSED' : return 0;
             default: throw new Exception('Unsupported sprint status ' . $status);
         }

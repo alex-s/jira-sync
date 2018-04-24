@@ -231,6 +231,17 @@ SQL;
         return $this->fetch($sql);
     }
 
+    public function applySectionsUpdates($updates)
+    {
+        $sql = <<<SQL
+            UPDATE sprint SET everhour_id = :id: WHERE `name` = :name:
+SQL;
+
+        foreach ($updates as $name => $id) {
+            $this->exec(strtr($sql, [':name:' => $name, ':id:' => $id]));
+        }
+    }
+
     public function getNewIssues()
     {
         $sql = <<<SQL
