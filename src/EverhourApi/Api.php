@@ -26,7 +26,7 @@ class Api extends JiraApi
         $result = $this->api(self::REQUEST_POST, "/projects/{$this->projectKey}/sections", $data);
         $this->checkResult($result->getResult());
 
-        return $result->getResult()->id;
+        return $result->getResult()['id'];
     }
 
     public function updateSection($id, $data)

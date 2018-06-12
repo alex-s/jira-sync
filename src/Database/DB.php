@@ -234,7 +234,7 @@ SQL;
     public function applySectionsUpdates($updates)
     {
         $sql = <<<SQL
-            UPDATE sprint SET everhour_id = :id: WHERE `name` = :name:
+            UPDATE sprint SET everhour_id = :id: WHERE `name` = ':name:'
 SQL;
 
         foreach ($updates as $name => $id) {
