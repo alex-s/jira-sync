@@ -35,13 +35,13 @@ class JiraDownloader extends Downloader
                 $logger->info(sprintf(' - download %d issues', $i));
             }
 
-            $sprint = $issue->getSprintId();
-            /** @var AdvancedIssue $issue */
-            $sprints[$sprint] = [
-                'jira_id' => $sprint,
-                'name' => $issue->getSprintName(),
-                'status' => $issue->getSprintStatus()
-            ];
+////            $sprint = $issue->getSprintId();
+//            /** @var AdvancedIssue $issue */
+//            $sprints[$sprint] = [
+//                'jira_id' => $sprint,
+//                'name' => $issue->getSprintName(),
+//                'status' => $issue->getSprintStatus()
+//            ];
 
             $issueId = $issue->getId();
             $status = $issue->getStatus()['name'];
@@ -49,7 +49,7 @@ class JiraDownloader extends Downloader
             $issues[$issueId] = [
                 'jira_id' => $issueId,
                 'name' => $issue->getKey() . ' ' . $issue->getSummary(),
-                'sprint_jira_id' => $issue->getSprintId(),
+                'sprint_jira_id' => AdvancedIssue::DEFAULT_SPRINT_ID,
                 'status' => (int) !in_array($status, ['Resolved', 'Closed', 'Merged', 'Released'], true),
                 'estimation' => $issue->getStoryPoints(),
             ];
