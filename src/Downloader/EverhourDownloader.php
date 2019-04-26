@@ -49,9 +49,9 @@ class EverhourDownloader extends Downloader
 
             $issueBuffer[] = [
                 'everhour_id' => $task['id'],
-                'sprint_everhour_id' => $task['section'],
+                'sprint_everhour_id' => $task['section'] ? $task['section'] : 0,
                 'name' => $task['name'],
-                'time_spent' => $timeSpent,
+                'time_spent' => $timeSpent ? $timeSpent : 0,
                 'user_id' => $mostTrackedUserId,
                 'status' => (int) ($task['status'] === 'open'),
             ];

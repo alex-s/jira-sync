@@ -51,7 +51,7 @@ class JiraDownloader extends Downloader
                 'name' => $issue->getKey() . ' ' . $issue->getSummary(),
                 'sprint_jira_id' => AdvancedIssue::DEFAULT_SPRINT_ID,
                 'status' => (int) !in_array($status, ['Resolved', 'Closed', 'Merged', 'Released'], true),
-                'estimation' => $issue->getStoryPoints(),
+                'estimation' => $issue->getStoryPoints() ? $issue->getStoryPoints() : 0,
             ];
         }
 

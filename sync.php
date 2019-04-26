@@ -40,7 +40,7 @@ $everhourApi = new Api($params['eh_url'], $params['eh_project_key'],
     new AdvancedCurlClient()
 );
 
-$jiraSync = new JiraDownloader($jiraApi, $params['jira_project_key'], 2500);
+$jiraSync = new JiraDownloader($jiraApi, $params['jira_project_key'], 3500);
 $logger->info('Download issues from Jira');
 $logger->info(sprintf(' - with filter "%s"', $jiraSync->getFilter()));
 $jiraIssues = $jiraSync->download($logger);
